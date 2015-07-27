@@ -1,6 +1,7 @@
 package com.videojs.providers{
     
-    import flash.media.Video;
+    import flash.display.Stage;
+    import flash.media.StageVideo;
     import flash.utils.ByteArray;
     
     public interface IProvider{
@@ -180,7 +181,7 @@ package com.videojs.providers{
          * For providers that employ an instance of NetStream, this method is used to connect that NetStream
          * with an external Video instance without exposing it.
          */
-        function attachVideo(pVideo:Video):void;
+        function attachVideo(pVideo:StageVideo):void;
         
         /**
          * Called when the provider is about to be disposed of.

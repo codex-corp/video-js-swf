@@ -6,11 +6,12 @@ package com.videojs.providers{
     import com.videojs.structs.ExternalEventName;
     import com.videojs.structs.PlaybackType;
     
+    import flash.display.Stage;
     import flash.events.EventDispatcher;
     import flash.events.NetStatusEvent;
     import flash.events.TimerEvent;
     import flash.external.ExternalInterface;
-    import flash.media.Video;
+    import flash.media.StageVideo;
     import flash.net.NetConnection;
     import flash.net.NetStream;
     import flash.utils.ByteArray;
@@ -32,7 +33,7 @@ package com.videojs.providers{
         private var _loadErrored:Boolean = false;
         private var _pauseOnStart:Boolean = false;
         private var _pausePending:Boolean = false;
-        private var _videoReference:Video;
+        private var _videoReference:StageVideo;
         
         private var _src:Object;
         private var _metadata:Object;
@@ -50,8 +51,8 @@ package com.videojs.providers{
         
         private var _model:VideoJSModel;
         
-        public function RTMPVideoProvider(){
-            _model = VideoJSModel.getInstance();
+        public function RTMPVideoProvider(stage:Stage){
+            _model = VideoJSModel.getInstance(stage);
             _metadata = {};
             _rtmpRetryTimer = new Timer(25, 1);
             _rtmpRetryTimer.addEventListener(TimerEvent.TIMER, onRTMPRetryTimerTick);
@@ -340,7 +341,7 @@ package com.videojs.providers{
             }
         }
         
-        public function attachVideo(pVideo:Video):void{
+        public function attachVideo(pVideo:StageVideo):void{
             _videoReference = pVideo;
         }
         

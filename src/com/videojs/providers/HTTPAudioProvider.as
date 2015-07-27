@@ -4,6 +4,7 @@ package com.videojs.providers{
     import com.videojs.structs.ExternalErrorEventName;
     import com.videojs.structs.ExternalEventName;
 
+    import flash.display.Stage;
     import flash.events.Event;
     import flash.events.IOErrorEvent;
     import flash.events.ProgressEvent;
@@ -11,7 +12,7 @@ package com.videojs.providers{
     import flash.external.ExternalInterface;
     import flash.media.Sound;
     import flash.media.SoundChannel;
-    import flash.media.Video;
+    import flash.media.StageVideo;
     import flash.net.URLRequest;
     import flash.utils.ByteArray;
     import flash.utils.Timer;
@@ -48,8 +49,8 @@ package com.videojs.providers{
 
         private var _model:VideoJSModel;
 
-        public function HTTPAudioProvider(){
-            _model = VideoJSModel.getInstance();
+        public function HTTPAudioProvider(stage:Stage){
+            _model = VideoJSModel.getInstance(stage);
             _metadata = {};
             _throughputTimer = new Timer(250, 0);
             _throughputTimer.addEventListener(TimerEvent.TIMER, onThroughputTimerTick);
@@ -347,7 +348,7 @@ package com.videojs.providers{
             }
         }
 
-        public function attachVideo(pVideo:Video):void{}
+        public function attachVideo(pVideo:StageVideo):void{}
 
         public function die():void
         {
