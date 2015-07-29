@@ -196,6 +196,11 @@ package com.videojs.providers{
         /**
          * Should return the currently used stream level.
          */
+        function get levels():Array;
+
+        /**
+         * Should return the currently used stream level.
+         */
         function get level():int;
 
         /**

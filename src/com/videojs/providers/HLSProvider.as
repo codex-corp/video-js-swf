@@ -540,6 +540,29 @@ package com.videojs.providers{
         }
 
         /**
+         * Should return the stream levels that this content has.
+         */
+        public function get levels():Array {
+
+            var _levels:Array = [];
+
+            // _hls.levels is a Vector
+            for (var i : Number = 0; i < _hls.levels.length; i++) {
+                // See org.mangui.hls.model.Level
+                _levels.push({
+                    bitrate: _hls.levels[i].bitrate,
+                    name:    _hls.levels[i].name,
+                    index:   _hls.levels[i].index,
+                    width:   _hls.levels[i].width,
+                    height:  _hls.levels[i].height,
+                    url:     _hls.levels[i].url
+                });
+            }
+
+            return _levels;
+        }
+
+        /**
          * Should return the currently used stream level.
          */
         public function get level():int

@@ -576,6 +576,17 @@ package com.videojs{
         }
 
         /**
+         * Returns the stream levels that this content has.
+         */
+        public function get levels():Array
+        {
+            if(_provider){
+                return _provider.levels;
+            }
+            return [];
+        }
+
+        /**
          * Returns the currently used stream level.
          */
         public function get level():int
