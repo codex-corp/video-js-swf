@@ -544,7 +544,7 @@ package com.videojs.providers{
          */
         public function get level():int
         {
-            return _hls['level'];
+            return _hls.currentLevel;
         }
 
         /**
@@ -554,7 +554,7 @@ package com.videojs.providers{
          */
         public function set level(pLevel:int):void
         {
-            _hls['level'] = pLevel;
+            _hls.currentLevel = pLevel;
 
             // For reflecting new level from the next segment. Otherwise, new setting is applied only after currently buffered data is gone.
             if (!isNaN(_position) && pLevel != -1) {
