@@ -1,6 +1,7 @@
 package com.videojs.providers{
 
-  import flash.media.Video;
+  import flash.display.Stage;
+  import flash.media.StageVideo;
   import flash.utils.ByteArray;
   import flash.net.NetStream;
   import flash.events.Event;
@@ -28,7 +29,7 @@ package com.videojs.providers{
         private var _hls:HLS;
         private var _src:Object;
         private var _model:VideoJSModel;
-        private var _videoReference:Video;
+        private var _videoReference:StageVideo;
         private var _metadata:Object;
         private var _mediaWidth:Number;
         private var _mediaHeight:Number;
@@ -49,11 +50,12 @@ package com.videojs.providers{
         private var _bytesTotal:Number = 0;
         private var _bufferedTime:Number = 0;
 
-        public function HLSProvider() {
+        public function HLSProvider(stage:Stage) {
           Log.info("https://github.com/mangui/flashls/releases/tag/v0.4.1.1");
           _hls = new HLS();
-          _model = VideoJSModel.getInstance();
+          _model = VideoJSModel.getInstance(stage);
           _metadata = {};
+          _hls.stage = stage;
           _hls.addEventListener(HLSEvent.PLAYBACK_COMPLETE,_completeHandler);
           _hls.addEventListener(HLSEvent.ERROR,_errorHandler);
           _hls.addEventListener(HLSEvent.MANIFEST_LOADED,_manifestHandler);
@@ -496,10 +498,9 @@ package com.videojs.providers{
          * For providers that employ an instance of NetStream, this method is used to connect that NetStream
          * with an external Video instance without exposing it.
          */
-        public function attachVideo(pVideo:Video):void {
+        public function attachVideo(pVideo:StageVideo):void {
           _videoReference = pVideo;
           _videoReference.attachNetStream(_hls.stream);
-          _hls.stage = pVideo.stage;
           _videoReference.addEventListener(Event.ENTER_FRAME, _onFrame);
           _model.broadcastEvent(new VideoPlaybackEvent(VideoPlaybackEvent.ON_STREAM_READY, {ns:_hls.stream as NetStream}));
           return;
@@ -513,7 +514,7 @@ package com.videojs.providers{
           stop();
 
           if(_videoReference) {
-            _videoReference.clear();
+            //_videoReference.clear();
           }
         }
 
@@ -539,11 +540,34 @@ package com.videojs.providers{
         }
 
         /**
+         * Should return the stream levels that this content has.
+         */
+        public function get levels():Array {
+
+            var _levels:Array = [];
+
+            // _hls.levels is a Vector
+            for (var i : Number = 0; i < _hls.levels.length; i++) {
+                // See org.mangui.hls.model.Level
+                _levels.push({
+                    bitrate: _hls.levels[i].bitrate,
+                    name:    _hls.levels[i].name,
+                    index:   _hls.levels[i].index,
+                    width:   _hls.levels[i].width,
+                    height:  _hls.levels[i].height,
+                    url:     _hls.levels[i].url
+                });
+            }
+
+            return _levels;
+        }
+
+        /**
          * Should return the currently used stream level.
          */
         public function get level():int
         {
-            return _hls['level'];
+            return _hls.currentLevel;
         }
 
         /**
@@ -553,7 +577,7 @@ package com.videojs.providers{
          */
         public function set level(pLevel:int):void
         {
-            _hls['level'] = pLevel;
+            _hls.currentLevel = pLevel;
 
             // For reflecting new level from the next segment. Otherwise, new setting is applied only after currently buffered data is gone.
             if (!isNaN(_position) && pLevel != -1) {

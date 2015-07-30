@@ -7,27 +7,29 @@ package com.videojs{
     import flash.display.Bitmap;
     import flash.display.Loader;
     import flash.display.Sprite;
+    import flash.display.Stage;
     import flash.events.Event;
     import flash.events.IOErrorEvent;
     import flash.events.SecurityErrorEvent;
+    import flash.events.StageVideoEvent;
     import flash.external.ExternalInterface;
     import flash.geom.Rectangle;
-    import flash.media.Video;
+    import flash.media.StageVideo;
     import flash.net.URLRequest;
     import flash.system.LoaderContext;
     
     public class VideoJSView extends Sprite{
         
-        private var _uiVideo:Video;
+        private var _uiVideo:StageVideo;
         private var _uiPosterContainer:Sprite;
             private var _uiPosterImage:Loader;
         private var _uiBackground:Sprite;
         
         private var _model:VideoJSModel;
         
-        public function VideoJSView(){
+        public function VideoJSView(stage:Stage){
             
-            _model = VideoJSModel.getInstance();
+            _model = VideoJSModel.getInstance(stage);
             _model.addEventListener(VideoJSEvent.POSTER_SET, onPosterSet);
             _model.addEventListener(VideoJSEvent.BACKGROUND_COLOR_SET, onBackgroundColorSet);
             _model.addEventListener(VideoJSEvent.STAGE_RESIZE, onStageResize);
@@ -50,16 +52,18 @@ package com.videojs{
             
             addChild(_uiPosterContainer);
             
-            _uiVideo = new Video();
-            _uiVideo.width = _model.stageRect.width;
-            _uiVideo.height = _model.stageRect.height;
-            _uiVideo.smoothing = true;
-            addChild(_uiVideo);
+            _uiVideo = stage.stageVideos[0];
+            _uiVideo.addEventListener(StageVideoEvent.RENDER_STATE, onStageVideoRender);
             
             _model.videoReference = _uiVideo;
             
         }
         
+        private function onStageVideoRender(e:StageVideoEvent):void {
+            ExternalInterface.call("console.log", "Decoder: " + e.status);
+            sizeVideoObject();
+        }
+
         /**
          * Loads the poster frame, if one has been specified. 
          * 
@@ -93,6 +97,7 @@ package com.videojs{
         private function sizeVideoObject():void{
             
             var __targetWidth:int, __targetHeight:int;
+            var __targetY:int, __targetX:int;
             
             var __availableWidth:int = _model.stageRect.width;
             var __availableHeight:int = _model.stageRect.height;
@@ -126,12 +131,10 @@ package com.videojs{
                 __targetHeight = __availableHeight;
             }
 
-            _uiVideo.width = __targetWidth;
-            _uiVideo.height = __targetHeight;
-            
-            _uiVideo.x = Math.round((_model.stageRect.width - _uiVideo.width) / 2);
-            _uiVideo.y = Math.round((_model.stageRect.height - _uiVideo.height) / 2);
-            
+            __targetX = Math.round((_model.stageRect.width - __targetWidth) / 2);
+            __targetY = Math.round((_model.stageRect.height - __targetHeight) / 2);
+
+            _uiVideo.viewPort = new Rectangle(__targetX, __targetY, __targetWidth, __targetHeight);
 
         }
 

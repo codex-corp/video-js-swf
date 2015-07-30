@@ -12,22 +12,25 @@ package com.videojs{
     import com.videojs.structs.PlaybackType;
     import com.videojs.structs.PlayerMode;
 
+    import flash.display.Stage;
     import flash.events.Event;
     import flash.events.EventDispatcher;
     import flash.external.ExternalInterface;
     import flash.geom.Rectangle;
     import flash.media.SoundMixer;
     import flash.media.SoundTransform;
-    import flash.media.Video;
+    import flash.media.StageVideo;
     import flash.utils.ByteArray;
 
     public class VideoJSModel extends EventDispatcher{
 
         private var _masterVolume:SoundTransform;
         private var _currentPlaybackType:String;
-        private var _videoReference:Video;
+        private var _videoReference:StageVideo;
         private var _lastSetVolume:Number = 1;
         private var _provider:IProvider;
+
+        private var _stage:Stage;
 
         // accessible properties
         private var _mode:String;
@@ -60,11 +63,19 @@ package com.videojs{
             }
         }
 
-        public static function getInstance():VideoJSModel {
+        public static function getInstance(stage:Stage):VideoJSModel {
             if (_instance === null){
                 _instance = new VideoJSModel(new SingletonLock());
+                _instance.stage = stage;
             }
             return _instance;
+        }
+
+        public function get stage():Stage{
+            return _stage;
+        }
+        public function set stage(stage:Stage):void {
+            _stage = stage;
         }
 
         public function get mode():String{
@@ -146,10 +157,10 @@ package com.videojs{
             }
         }
 
-        public function get videoReference():Video{
+        public function get videoReference():StageVideo{
             return _videoReference;
         }
-        public function set videoReference(pVideo:Video):void {
+        public function set videoReference(pVideo:StageVideo):void {
             _videoReference = pVideo;
         }
 
@@ -565,6 +576,17 @@ package com.videojs{
         }
 
         /**
+         * Returns the stream levels that this content has.
+         */
+        public function get levels():Array
+        {
+            if(_provider){
+                return _provider.levels;
+            }
+            return [];
+        }
+
+        /**
          * Returns the currently used stream level.
          */
         public function get level():int
@@ -668,7 +690,7 @@ package com.videojs{
                         __src = {
                             path: _src
                         };
-                        _provider = new HTTPVideoProvider();
+                        _provider = new HTTPVideoProvider(stage);
                         _provider.attachVideo(_videoReference);
                         _provider.init(__src, _autoplay);
                     }
@@ -677,7 +699,7 @@ package com.videojs{
                             connectionURL: _rtmpConnectionURL,
                             streamURL: _rtmpStream
                         };
-                        _provider = new RTMPVideoProvider();
+                        _provider = new RTMPVideoProvider(stage);
                         _provider.attachVideo(_videoReference);
                         _provider.init(__src, _autoplay);
                     }
@@ -686,7 +708,7 @@ package com.videojs{
                             m3u8: _src,
                             parameters: _parameters
                         };
-                        _provider = new HLSProvider();
+                        _provider = new HLSProvider(stage);
                         _provider.attachVideo(_videoReference);
                         _provider.init(__src, _autoplay);
                     }
@@ -696,7 +718,7 @@ package com.videojs{
                     __src = {
                         path:_src
                     };
-                    _provider = new HTTPAudioProvider();
+                    _provider = new HTTPAudioProvider(stage);
                     _provider.init(__src, _autoplay);
                     break;
                 default:

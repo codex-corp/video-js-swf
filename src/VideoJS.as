@@ -11,9 +11,11 @@ package{
     import flash.display.StageScaleMode;
     import flash.events.Event;
     import flash.events.MouseEvent;
+    import flash.events.StageVideoAvailabilityEvent;
     import flash.events.TimerEvent;
     import flash.external.ExternalInterface;
     import flash.geom.Rectangle;
+    import flash.media.StageVideoAvailability;
     import flash.system.Security;
     import flash.ui.ContextMenu;
     import flash.ui.ContextMenuItem;
@@ -50,9 +52,6 @@ package{
                 registerExternalMethods();
             }
 
-            _app = new VideoJSApp();
-            addChild(_app);
-
             _app.model.stageRect = new Rectangle(0, 0, stage.stageWidth, stage.stageHeight);
 
             // add content-menu version info
@@ -63,6 +62,7 @@ package{
             _ctxMenu.hideBuiltInItems();
             _ctxMenu.customItems.push(_ctxVersion, _ctxAbout);
             this.contextMenu = _ctxMenu;
+
 
         }
 
@@ -168,11 +168,26 @@ package{
         }
 
         private function onAddedToStage(e:Event):void{
+            ExternalInterface.call('console.log', "onAddedToStage");
             stage.addEventListener(MouseEvent.CLICK, onStageClick);
             stage.addEventListener(Event.RESIZE, onStageResize);
             stage.scaleMode = StageScaleMode.NO_SCALE;
             stage.align = StageAlign.TOP_LEFT;
-            _stageSizeTimer.start();
+            stage.addEventListener(StageVideoAvailabilityEvent.STAGE_VIDEO_AVAILABILITY, onStageVideoAvailability);
+        }
+
+        private function onStageVideoAvailability(e:StageVideoAvailabilityEvent):void {
+            if (e.availability != StageVideoAvailability.AVAILABLE) {
+                ExternalInterface.call('console.error', 'StageVideo is not avalable.');
+                ExternalInterface.call('window.alert', 'You must update your version of Adobe Flash to view this video.');
+                // TODO: throw?
+            } else {
+                ExternalInterface.call('console.log', 'StageVideo is avalable.');
+                _app = new VideoJSApp(stage);
+                addChild(_app);
+                _stageSizeTimer.start();
+                stage.removeEventListener(StageVideoAvailabilityEvent.STAGE_VIDEO_AVAILABILITY, onStageVideoAvailability);
+            }
         }
 
         private function onStageSizeTimerTick(e:TimerEvent):void{
@@ -302,6 +317,9 @@ package{
                     break;
                 case "level":
                     return _app.model.level;
+                    break;
+                case "levels":
+                    return _app.model.levels;
                     break;
                 case "autoLevelEnabled":
                     return _app.model.autoLevelEnabled;

@@ -4,10 +4,11 @@ package com.videojs.providers{
     import com.videojs.events.VideoPlaybackEvent;
     import com.videojs.structs.ExternalErrorEventName;
     import com.videojs.structs.ExternalEventName;
+    import flash.display.Stage;
     import flash.events.EventDispatcher;
     import flash.events.NetStatusEvent;
     import flash.events.TimerEvent;
-    import flash.media.Video;
+    import flash.media.StageVideo;
     import flash.net.NetConnection;
     import flash.net.NetStream;
     import flash.net.NetStreamAppendBytesAction;
@@ -62,7 +63,7 @@ package com.videojs.providers{
          * through appendBuffer, not for traditional file download video.
          */
         private var _ending:Boolean = false;
-        private var _videoReference:Video;
+        private var _videoReference:StageVideo;
 
         /**
          * When the player is paused, and a seek is executed, the NetStream.time property will NOT update until the decoder encounters a new time tag,
@@ -85,8 +86,8 @@ package com.videojs.providers{
         private var _durationOverride:Number;
         private var _model:VideoJSModel;
 
-        public function HTTPVideoProvider(){
-            _model = VideoJSModel.getInstance();
+        public function HTTPVideoProvider(stage:Stage){
+            _model = VideoJSModel.getInstance(stage);
             _metadata = {};
             _throughputTimer = new Timer(250, 0);
             _throughputTimer.addEventListener(TimerEvent.TIMER, onThroughputTimerTick);
@@ -390,7 +391,7 @@ package com.videojs.providers{
             }
         }
 
-        public function attachVideo(pVideo:Video):void{
+        public function attachVideo(pVideo:StageVideo):void{
             _videoReference = pVideo;
         }
 
@@ -398,7 +399,7 @@ package com.videojs.providers{
             if(_videoReference)
             {
                 // Clears the image currently displayed in the Video object.
-                _videoReference.clear();
+                //_videoReference.clear();
                 _videoReference.attachNetStream(null);
             }
 
@@ -431,6 +432,9 @@ package com.videojs.providers{
         // This provider supports a stream with single level.
         public function get numberOfLevels():int{
             return 1;
+        }
+        public function get levels():Array{
+            return [];
         }
         public function get level():int{
             return 0;
