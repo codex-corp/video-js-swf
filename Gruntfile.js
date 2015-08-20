@@ -205,6 +205,34 @@ module.exports = function (grunt) {
         }
       });
 
+      // Whether Flash should be built with debug flag
+      var isDebug = grunt.config.get('mxmlc').options.compiler.debug || false;
+
+      //
+      // COMPC Options (FlasHLS)
+      //
+
+      var flashlsRoot = 'modules/flashls/';
+      var flashlsDest = 'libs/flashls.swc';
+
+      var compcCmdLineOpts = [
+        '-define=CONFIG::LOGGING,' + isDebug,
+        '-define=CONFIG::FLASH_11_1,false',
+        '-optimize=true',
+        '-use-network=false',
+        '-library-path+=' + flashlsRoot + 'lib/blooddy_crypto.swc',
+        '-include-sources=' + flashlsRoot + 'src/org/mangui/hls',
+        '-output=' + flashlsDest,
+        '-target-player=10.1'
+      ];
+
+      grunt.verbose.writeln('compc path: ' + flexSdk.bin.compc);
+      grunt.verbose.writeln('compc options: ' + JSON.stringify(compcCmdLineOpts));
+
+      //
+      // MXMLC Options
+      //
+
       var cmdLineOpts = [];
 
       if (f.dest) {
@@ -212,9 +240,7 @@ module.exports = function (grunt) {
         cmdLineOpts.push(f.dest);
       }
 
-      // Use matching FlasHLS build mode with VideoJS SWF
-      var build = grunt.config.get('mxmlc').options.compiler.debug ? 'debug' : 'release';
-      cmdLineOpts.push('-library-path+=modules/flashls/bin/' + build + '/flashls.swc');
+      cmdLineOpts.push('-library-path+=' + flashlsDest);
 
       cmdLineOpts.push('-define=CONFIG::version, "' + pkg.version + '"');
       cmdLineOpts.push('--');
@@ -224,10 +250,14 @@ module.exports = function (grunt) {
       grunt.verbose.writeln('mxmlc path: ' + flexSdk.bin.mxmlc);
       grunt.verbose.writeln('options: ' + JSON.stringify(cmdLineOpts));
 
-      // Compile!
-      childProcess.execFile(flexSdk.bin.mxmlc, cmdLineOpts, function(err, stdout, stderr) {
+      //
+      // FIXME: The following can be cleaned up with proper use of async
+      //
+
+      // Compile flashls.swc
+      childProcess.execFile(flexSdk.bin.compc, compcCmdLineOpts, function (err, stdout, stderr) {
         if (!err) {
-          grunt.log.writeln('File "' + f.dest + '" created.');
+          grunt.log.writeln('File "' + flashlsDest + '" created.');
         }
         else {
           grunt.log.error(err.toString());
@@ -240,9 +270,29 @@ module.exports = function (grunt) {
           else {
             grunt.fail.warn('FAILED');
           }
-
+          callback(err);
         }
-        callback(err);
+
+        // Compile video-js.swf
+        childProcess.execFile(flexSdk.bin.mxmlc, cmdLineOpts, function(err, stdout, stderr) {
+          if (!err) {
+            grunt.log.writeln('File "' + f.dest + '" created.');
+          }
+          else {
+            grunt.log.error(err.toString());
+            grunt.verbose.writeln('stdout: ' + stdout);
+            grunt.verbose.writeln('stderr: ' + stderr);
+
+            if (options.force === true) {
+              grunt.log.warn('Should have failed but will continue because this task had the `force` option set to `true`.');
+            }
+            else {
+              grunt.fail.warn('FAILED');
+            }
+
+          }
+          callback(err);
+        });
       });
     };
 
