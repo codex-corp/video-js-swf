@@ -211,7 +211,11 @@ module.exports = function (grunt) {
         cmdLineOpts.push('-output');
         cmdLineOpts.push(f.dest);
       }
-      cmdLineOpts.push('-library-path+=libs/flashls.swc');
+
+      // Use matching FlasHLS build mode with VideoJS SWF
+      var build = grunt.config.get('mxmlc').options.compiler.debug ? 'debug' : 'release';
+      cmdLineOpts.push('-library-path+=modules/flashls/bin/' + build + '/flashls.swc');
+
       cmdLineOpts.push('-define=CONFIG::version, "' + pkg.version + '"');
       cmdLineOpts.push('--');
       cmdLineOpts.push.apply(cmdLineOpts, srcList);
