@@ -1,0 +1,3 @@
+[submodule "modules/flashls"]
+	path = modules/flashls
+	url = git@github.com:pivotshare/flashls.git
