@@ -164,9 +164,17 @@ module.exports = function (grunt) {
           ]
         }
       },
-    }
+    },
+    watch: {
+      files: [
+        'modules/flashls/src/org/mangui/hls/**/*', // See mxmlc task
+        'src/**/*'
+      ],
+      tasks: ['dist'],
+    },
   });
 
+  grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-connect');
   grunt.loadNpmTasks('grunt-bumpup');
   grunt.loadNpmTasks('grunt-tagrelease');
