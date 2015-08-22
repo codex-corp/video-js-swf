@@ -72,7 +72,7 @@ module.exports = function (grunt) {
           // `-context-root context-path`
           'contextRoot': null,
           // `-debug=false`
-          'debug': false,
+          'debug': !!process.env.VIDEO_JS_SWF_DEBUG,
           // `-defaults-css-files filePath1 ...`
           'defaultsCssFiles': [],
           // `-defaults-css-url http://example.com/main.css`
