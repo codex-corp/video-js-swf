@@ -43,7 +43,6 @@ package com.videojs{
         private var _src:String = "";
         private var _rtmpConnectionURL:String = "";
         private var _rtmpStream:String = "";
-        private var _poster:String = "";
         private var _parameters:Object;
 
         private static var _instance:VideoJSModel;
@@ -279,15 +278,6 @@ package com.videojs{
             else if(_preload == "auto"){
                 _provider.load();
             }
-        }
-
-
-        public function get poster():String{
-            return _poster;
-        }
-        public function set poster(pValue:String):void {
-            _poster = pValue;
-            broadcastEvent(new VideoJSEvent(VideoJSEvent.POSTER_SET));
         }
 
         public function get parameters():Object{
