@@ -9,107 +9,6 @@ module.exports = function (grunt) {
       }
     },
     mxmlc: {
-      options: {
-        // http://livedocs.adobe.com/flex/3/html/help.html?content=compilers_16.html
-        metadata: {
-          // `-title "Adobe Flex Application"`
-          title: 'VideoJS SWF',
-          // `-description "http://www.adobe.com/flex"`
-          description: 'http://www.videojs.com',
-          // `-publisher "The Publisher"`
-          publisher: 'Brightcove, Inc.',
-          // `-creator "The Author"`
-          creator: 'Brightcove, Inc.',
-          // `-language=EN`
-          // `-language+=klingon`
-          language: 'EN',
-          // `-localized-title "The Color" en-us -localized-title "The Colour" en-ca`
-          localizedTitle: null,
-          // `-localized-description "Standardized Color" en-us -localized-description "Standardised Colour" en-ca`
-          localizedDescription: null,
-          // `-contributor "Contributor #1" -contributor "Contributor #2"`
-          contributor: null,
-          // `-date "Mar 10, 2013"`
-          date: null
-        },
-
-        // http://livedocs.adobe.com/flex/3/html/help.html?content=compilers_18.html
-        application: {
-          // `-default-size 240 240`
-          layoutSize: {
-            width: 640,
-            height: 360
-          },
-          // `-default-frame-rate=24`
-          frameRate: 30,
-          // `-default-background-color=0x869CA7`
-          backgroundColor: 0x000000,
-          // `-default-script-limits 1000 60`
-          scriptLimits: {
-            maxRecursionDepth: 1000,
-            maxExecutionTime: 60
-          }
-        },
-
-        // http://livedocs.adobe.com/flex/3/html/help.html?content=compilers_19.html
-        // `-library-path+=libraryPath1 -library-path+=libraryPath2`
-        libraries: ['libs/*.*'],
-        // http://livedocs.adobe.com/flex/3/html/help.html?content=compilers_14.html
-        // http://livedocs.adobe.com/flex/3/html/help.html?content=compilers_17.html
-        // http://livedocs.adobe.com/flex/3/html/help.html?content=compilers_20.html
-        // http://livedocs.adobe.com/flex/3/html/help.html?content=compilers_21.html
-        compiler: {
-          // `-accessible=false`
-          'accessible': false,
-          // `-actionscript-file-encoding=UTF-8`
-          'actionscriptFileEncoding': null,
-          // `-allow-source-path-overlap=false`
-          'allowSourcePathOverlap': false,
-          // `-as3=true`
-          'as3': true,
-          // `-benchmark=true`
-          'benchmark': true,
-          // `-context-root context-path`
-          'contextRoot': null,
-          // `-debug=false`
-          'debug': !!process.env.VIDEO_JS_SWF_DEBUG,
-          // `-defaults-css-files filePath1 ...`
-          'defaultsCssFiles': [],
-          // `-defaults-css-url http://example.com/main.css`
-          'defaultsCssUrl': null,
-          // `-define=CONFIG::debugging,true -define=CONFIG::release,false`
-          // `-define+=CONFIG::bool2,false -define+=CONFIG::and1,"CONFIG::bool2 && false"
-          // `-define+=NAMES::Company,"'Adobe Systems'"`
-          'defines': {},
-          // `-es=true -as3=false`
-          'es': false,
-          // `-externs className1 ...`
-          'externs': [],
-          // `-external-library-path+=pathElement`
-          'externalLibraries': [],
-          'fonts': {
-            // `-fonts.advanced-anti-aliasing=false`
-            advancedAntiAliasing: false,
-            // `-fonts.languages.language-range "Alpha and Plus" "U+0041-U+007F,U+002B"`
-            // USAGE:
-            // ```
-            // languages: [{
-            //   lang: 'Alpha and Plus',
-            //   range: ['U+0041-U+007F', 'U+002B']
-            // }]
-            // ```
-            languages: [],
-            // `-fonts.local-fonts-snapsnot filePath`
-            localFontsSnapshot: null,
-            // `-fonts.managers flash.fonts.JREFontManager flash.fonts.BatikFontManager flash.fonts.AFEFontManager`
-            // NOTE: FontManager preference is in REVERSE order (prefers LAST array item).
-            //       For more info, see http://livedocs.adobe.com/flex/3/html/help.html?content=fonts_06.html
-            managers: []
-          },
-          // `-incremental=false`
-          'incremental': false
-        }
-      },
       videojs_swf: {
         files: {
           'dist/video-js.swf': ['src/VideoJS.as']
@@ -168,6 +67,7 @@ module.exports = function (grunt) {
     watch: {
       files: [
         'modules/flashls/src/org/mangui/hls/**/*', // See mxmlc task
+        'modules/flashls/src/com/pivotshare/**/*', // See mxmlc task
         'src/**/*'
       ],
       tasks: ['dist'],
@@ -186,7 +86,11 @@ module.exports = function (grunt) {
   grunt.registerTask('dist', ['mxmlc']);
   grunt.registerTask('default', ['dist']);
 
+  /*
+   * MXMLC Task
+   */
   grunt.registerMultiTask('mxmlc', 'Compiling SWF', function () {
+
     // Merge task-specific and/or target-specific options with these defaults.
     var childProcess = require('child_process');
     var flexSdk = require('flex-sdk');
@@ -213,9 +117,6 @@ module.exports = function (grunt) {
         }
       });
 
-      // Whether Flash should be built with debug flag
-      var isDebug = grunt.config.get('mxmlc').options.compiler.debug || false;
-
       //
       // COMPC Options (FlasHLS)
       //
@@ -224,14 +125,14 @@ module.exports = function (grunt) {
       var flashlsDest = 'libs/flashls.swc';
 
       var compcCmdLineOpts = [
-        '-define=CONFIG::LOGGING,' + isDebug,
+        '-define=CONFIG::LOGGING,' + !!process.env.VIDEO_JS_SWF_DEBUG,
         '-define=CONFIG::FLASH_11_1,false',
         '-optimize=true',
         '-use-network=false',
         '-library-path+=' + flashlsRoot + 'lib/blooddy_crypto.swc',
-        '-include-sources=' + flashlsRoot + 'src/org/mangui/hls',
+        '-include-sources=' + flashlsRoot + 'src/org/mangui/hls,' + flashlsRoot + 'src/com/pivotshare',
         '-output=' + flashlsDest,
-        '-target-player=10.1'
+        '-target-player=15.0',
       ];
 
       grunt.verbose.writeln('compc path: ' + flexSdk.bin.compc);
@@ -241,16 +142,19 @@ module.exports = function (grunt) {
       // MXMLC Options
       //
 
-      var cmdLineOpts = [];
+      var cmdLineOpts = [
+        '-library-path+=' + flashlsDest,
+        '-define=CONFIG::version, "' + pkg.version + '"',
+        '-swf-version=26'
+      ];
+
+      // TODO: Add telemetry on debug
 
       if (f.dest) {
         cmdLineOpts.push('-output');
         cmdLineOpts.push(f.dest);
       }
 
-      cmdLineOpts.push('-library-path+=' + flashlsDest);
-
-      cmdLineOpts.push('-define=CONFIG::version, "' + pkg.version + '"');
       cmdLineOpts.push('--');
       cmdLineOpts.push.apply(cmdLineOpts, srcList);
 
