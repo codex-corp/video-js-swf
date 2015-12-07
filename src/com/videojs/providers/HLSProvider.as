@@ -47,7 +47,7 @@ package com.videojs.providers{
 
         private var _bytesLoaded:Number = 0;
         private var _bytesTotal:Number = 0;
-        private var _bufferedTime:Number = 0;
+        private var _bufferedTime:Array = [];
 
         public function HLSProvider() {
           Log.info("https://github.com/mangui/flashls/releases/tag/v0.4.1.1");
@@ -104,7 +104,7 @@ package com.videojs.providers{
 
         private function _mediaTimeHandler(event:HLSEvent):void {
           _position = event.mediatime.position;
-          _bufferedTime = event.mediatime.buffer+event.mediatime.position;
+          _bufferedTime = [[0, event.mediatime.buffer+event.mediatime.position]];
 
           if(event.mediatime.duration != _duration) {
             _duration = event.mediatime.duration;
@@ -259,7 +259,7 @@ package com.videojs.providers{
          * Should return the amount of media that has been buffered, in seconds, or 0 if
          * this value is unknown or unable to be determined (due to lack of duration data, etc)
          */
-        public function get buffered():Number {
+        public function get buffered():Array {
           return _bufferedTime;
         }
 
@@ -411,7 +411,7 @@ package com.videojs.providers{
             _isManifestLoaded = false;
             _position = 0;
             _duration = 0;
-            _bufferedTime = 0;
+            _bufferedTime = [];
             _hls.load(_src.m3u8);
           }
         }
@@ -461,7 +461,7 @@ package com.videojs.providers{
           Log.debug("HLSProvider.seekBySeconds");
           if(_isManifestLoaded) {
             _position = pTime;
-            _bufferedTime = _position;
+            _bufferedTime = [[0, _position]];
             _hls.stream.seek(pTime);
           }
         }
@@ -473,7 +473,7 @@ package com.videojs.providers{
           Log.debug("HLSProvider.seekByPercent");
           if(_isManifestLoaded) {
             _position = pPercent*_duration;
-            _bufferedTime = _position;
+            _bufferedTime = [[0, _position]];
             _hls.stream.seek(pPercent*_duration);
           }
         }
@@ -484,7 +484,7 @@ package com.videojs.providers{
         public function stop():void {
           Log.debug("HLSProvider.stop");
           _hls.stream.close();
-          _bufferedTime = 0;
+          _bufferedTime = [];
           _duration = 0;
           _position = 0;
           _networkState = NetworkState.NETWORK_EMPTY;
