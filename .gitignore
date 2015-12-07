@@ -10,4 +10,4 @@ build
 *.orig
 
 sandbox/*
-!sandbox/*.example
+!sandbox/*.examplenode_modules
