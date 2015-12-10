@@ -56,11 +56,11 @@ package{
 
             // add content-menu version info
 
-            //var _ctxVersion:ContextMenuItem = new ContextMenuItem("VideoJS Flash Component v" + VERSION, false, false);
-            //var _ctxAbout:ContextMenuItem = new ContextMenuItem("Copyright © 2014 Brightcove, Inc.", false, false);
+            var _ctxVersion:ContextMenuItem = new ContextMenuItem("Mangomolo, By DOTCOM MENA", false, false);
+            var _ctxAbout:ContextMenuItem = new ContextMenuItem("Copyright © 2016 Mangomolo.", false, false);
             var _ctxMenu:ContextMenu = new ContextMenu();
             _ctxMenu.hideBuiltInItems();
-            //_ctxMenu.customItems.push(_ctxVersion, _ctxAbout);
+            _ctxMenu.customItems.push(_ctxVersion, _ctxAbout);
             this.contextMenu = _ctxMenu;
 
         }
