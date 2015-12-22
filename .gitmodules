@@ -1,0 +1,3 @@
+[submodule "modules/flashls"]
+	path = modules/flashls
+	url = https://github.com/codex-corp/flashls.git
